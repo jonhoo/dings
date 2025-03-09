@@ -16,6 +16,10 @@ impl Data {
             for (column, ys) in self.ys.iter().enumerate() {
                 let y = ys[row];
 
+                if !y.is_finite() {
+                    continue;
+                }
+
                 const CMP_PAD: f64 = 0.001;
                 let (min_x, max_x) = using.x_bounds();
                 assert!(x >= min_x - CMP_PAD);

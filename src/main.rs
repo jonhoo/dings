@@ -6,7 +6,8 @@ mod frame;
 
 use canvas::{Canvas, Mode};
 use data::{Data, MARKS};
-use frame::Frame;
+use frame::{Frame, PAD};
+use hdrhistogram::Histogram;
 
 fn main() -> io::Result<()> {
     let stdin = std::io::stdin();
@@ -16,8 +17,9 @@ fn main() -> io::Result<()> {
     let width = 90;
     let height = 25;
     let mut mode = Mode::Dot;
-    let cdf = false;
+    let cdf = true;
     if cdf {
+        assert!(x_is_row);
         mode = Mode::Count;
     }
 
@@ -92,14 +94,45 @@ fn main() -> io::Result<()> {
         }
     }
 
+    let mut frame = Frame::new_over(width, height, &data);
+    let (min_y, _) = frame.y_bounds();
+    let (_, range_y) = frame.range_xy();
+
     // apply transformations
     if cdf {
-        for (column, ys) in data.ys.iter().enumerate() {
-            // let mut histogram = Histogram::new_with_bounds(5).expect("5 is a valid sigfig");
+        data.xs.clear();
+
+        let plot_width = (width - PAD) as f64;
+        for ys in &mut data.ys {
+            let mut histogram =
+                Histogram::<u32>::new_with_bounds(1, width as u64, 3).expect("3 is a valid sigfig");
+            for y in ys.drain(..) {
+                let y_as_fraction_of_axis = (y - min_y) / range_y;
+                let y_as_future_column = (plot_width * y_as_fraction_of_axis).round() as u64;
+
+                histogram
+                    .record(y_as_future_column)
+                    .expect("value is in range");
+            }
+
+            for (i, bin) in histogram.iter_linear(1).enumerate() {
+                let x = bin.value_iterated_to() as f64;
+                if i >= data.xs.len() {
+                    data.xs.push(x);
+                } else {
+                    assert_eq!(x, data.xs[i]);
+                }
+                ys.push(bin.percentile());
+            }
         }
+
+        for y in &mut data.ys {
+            y.resize(data.xs.len(), y.last().copied().unwrap_or(f64::NAN));
+        }
+
+        frame = Frame::new_over(width, height, &data);
     }
 
-    let frame = Frame::new_over(width, height, &data);
     frame.draw_into(&mut canvas);
     data.draw_into(&mut canvas, &frame);
 

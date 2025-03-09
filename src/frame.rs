@@ -1,6 +1,6 @@
 use crate::{Canvas, Data};
 
-const PAD: usize = 2;
+pub const PAD: usize = 2;
 
 pub(crate) struct Frame {
     width: usize,
@@ -105,6 +105,10 @@ impl Frame {
 
     pub(crate) fn y_bounds(&self) -> (f64, f64) {
         (self.min_y, self.max_y)
+    }
+
+    pub(crate) fn range_xy(&self) -> (f64, f64) {
+        (self.range_x, self.range_y)
     }
 
     pub(crate) fn x_to_column(&self, x: f64) -> usize {
