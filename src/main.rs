@@ -13,13 +13,17 @@ fn main() -> io::Result<()> {
     let stdin = std::io::stdin();
     let mut stdin = stdin.lock();
 
+    let log_x = false;
+    let log_y = false;
     let x_is_row = true;
     let width = 90;
     let height = 25;
-    let mut mode = Mode::Dot;
-    let cdf = true;
+    let mut mode = Mode::Count;
+    let cdf = false;
     if cdf {
         assert!(x_is_row);
+        assert!(!log_x);
+        // log y is interpreted as log of the _input_ not _output_
         mode = Mode::Count;
     }
 
@@ -94,6 +98,21 @@ fn main() -> io::Result<()> {
         }
     }
 
+    if log_x {
+        for x in &mut data.xs {
+            if *x != 0. {
+                *x = x.log10();
+            }
+        }
+    }
+    if log_y {
+        for y in data.ys.iter_mut().flatten() {
+            if *y != 0. {
+                *y = y.log10();
+            }
+        }
+    }
+
     let mut frame = Frame::new_over(width, height, &data);
     let (min_y, _) = frame.y_bounds();
     let (_, range_y) = frame.range_xy();
@@ -140,10 +159,16 @@ fn main() -> io::Result<()> {
     let mut stdout = stdout.lock();
     let (min_x, max_x) = frame.x_bounds();
     let (min_y, max_y) = frame.y_bounds();
-    write!(
-        stdout,
-        "    x: [{min_x} - {max_x}]    y: [{min_y} - {max_y}]"
-    )?;
+    if log_x {
+        write!(stdout, "    log x: [{min_x} - {max_x}]")?;
+    } else {
+        write!(stdout, "    x: [{min_x} - {max_x}]")?;
+    }
+    if log_y {
+        write!(stdout, "    log y: [{min_y} - {max_y}]")?;
+    } else {
+        write!(stdout, "    y: [{min_y} - {max_y}]")?;
+    }
     if let Mode::Dot = canvas.mode {
         write!(stdout, " -- ")?;
         for column in 0..data.ys.len() {
