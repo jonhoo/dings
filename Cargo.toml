@@ -2,6 +2,12 @@
 name = "dings"
 version = "0.1.0"
 edition = "2024"
+repository = "https://github.com/jonhoo/dings"
 
 [dependencies]
 hdrhistogram = "7.5.4"
+
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
