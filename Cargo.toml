@@ -2,6 +2,10 @@
 name = "dings"
 version = "0.1.0"
 edition = "2021"
+description = "quick command-line data visualization"
+license = "ISC"
+repository = "https://github.com/jonhoo/dings/"
+categories = ["command-line-utilities", "visualization"]
 
 [dependencies]
 eyre = "0.6.12"
