@@ -135,7 +135,8 @@ fn main() -> io::Result<()> {
             }
 
             for (i, bin) in histogram.iter_linear(1).enumerate() {
-                let x = bin.value_iterated_to() as f64;
+                let x_as_column = bin.value_iterated_to() as f64;
+                let x = min_y + (x_as_column / plot_width) * range_y;
                 if i >= data.xs.len() {
                     data.xs.push(x);
                 } else {
