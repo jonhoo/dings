@@ -5,5 +5,5 @@ edition = "2024"
 
 [dependencies]
 eyre = "0.6.12"
-hdrhistogram = "7.5.4"
+hdrhistogram = { version = "7.5.4", default-features = false }
 lexopt = "0.3.0"
