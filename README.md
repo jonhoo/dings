@@ -15,7 +15,7 @@ livestream](https://youtu.be/bbWcGAOsbIE).
 ## TODOs
 
 **Argument help text**: Fill in the text for `--help` (currently
-`unimplemented!`).
+`unimplemented!`). Ideally we would also generate a man page.
 
 **Improved README**: Usage examples, differences from guff, how to
 install.
