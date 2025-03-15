@@ -41,7 +41,7 @@ fn main() -> eyre::Result<()> {
         let mut line = line.trim_end();
         while !line.is_empty() {
             let (next_num, remainder) = line
-                .split_once(|c| !matches!(c, '0'..='9' | '-' | '+' | '.'))
+                .split_once(|c| !matches!(c, '0'..='9' | '-' | '+' | '.' | 'E' | 'e'))
                 .unwrap_or((line, ""));
             line = remainder;
             let v = match next_num.parse::<f64>() {
