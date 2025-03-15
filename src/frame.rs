@@ -53,8 +53,8 @@ impl Frame {
 
         /* Override bounds that would lead to a range of zero, to avoid a
          * crash when plotting. (Found by afl.) */
-        let mut max_x = f64::max(min_x + 1.0, max_x);
-        let mut max_y = f64::max(min_y + 1.0, max_y);
+        let mut max_x = if min_x == max_x { min_x + 1. } else { max_x };
+        let mut max_y = if min_y == max_y { min_y + 1. } else { max_y };
 
         let mut range_x = max_x - min_x;
         let mut range_y = max_y - min_y;
