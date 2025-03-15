@@ -14,19 +14,14 @@ livestream](https://youtu.be/bbWcGAOsbIE).
 
 ## TODOs
 
-**Argument parsing**: Instead of hard-coding the configuration. `clap`
-is probably overkill, plus its MSRV policy may make things sad in terms
-of getting this adopted in long-tail distros. Note in particular that we
-should enforce interactions between arguments (eg, `--cdf` always
-implies `-m count`).
+**Argument help text**: Fill in the text for `--help` (currently
+`unimplemented!`). Ideally we would also generate a man page.
 
 **Improved README**: Usage examples, differences from guff, how to
 install.
 
 **Colored output**: Terminal escape codes to color datasets and axes.
 Ideally using <https://colorbrewer2.org/>.
-
-**CI**: <https://github.com/jonhoo/rust-ci-conf>.
 
 **Remaining features from guff**: `-f` to flip X and Y, `-log c` to get
 logarithmic count ("the trick" won't work any more), `-A` to not draw

@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: daily
+    ignore:
+      - dependency-name: "*"
+        # ignore patch+minor so that this rule only applies to major upgrades
+        update-types:
+          - "version-update:semver-patch"
+          - "version-update:semver-minor"
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      # non-major upgrades we can just batch every month or so for a release
+      interval: monthly
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - "version-update:semver-major"

@@ -40,6 +40,8 @@ impl Data {
                         // the `u8` that gets stored for every cell. we simply use that `u8` as a
                         // counter (well, counter in base36...) that saturates in '#'.
                         *cell = match *cell {
+                            // NOTE: it's intentional that we _don't_ match 'z' here
+                            #[allow(clippy::almost_complete_range)]
                             b'0'..b'9' | b'a'..b'z' => *cell + 1,
                             b'9' => b'a',
                             b'z' | b'#' => b'#',

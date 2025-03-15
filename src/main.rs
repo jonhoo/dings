@@ -1,31 +1,29 @@
-use std::io::{self, BufRead, Write};
+use args::Opt;
+use canvas::{Canvas, Mode};
+use data::{Data, MARKS};
+use eyre::Context;
+use frame::{Frame, PAD};
+use hdrhistogram::Histogram;
+use std::io::{BufRead, Write};
 
+mod args;
 mod canvas;
 mod data;
 mod frame;
 
-use canvas::{Canvas, Mode};
-use data::{Data, MARKS};
-use frame::{Frame, PAD};
-use hdrhistogram::Histogram;
-
-fn main() -> io::Result<()> {
+fn main() -> eyre::Result<()> {
     let stdin = std::io::stdin();
     let mut stdin = stdin.lock();
 
-    let log_x = false;
-    let log_y = false;
-    let x_is_row = true;
-    let width = 90;
-    let height = 25;
-    let mut mode = Mode::Count;
-    let cdf = false;
-    if cdf {
-        assert!(x_is_row);
-        assert!(!log_x);
-        // log y is interpreted as log of the _input_ not _output_
-        mode = Mode::Count;
-    }
+    let Opt {
+        log_x,
+        log_y,
+        x_is_row,
+        width,
+        height,
+        mode,
+        cdf,
+    } = Opt::parse_from_env().context("parse command-line arguments")?;
 
     let mut data = Data::default();
     let mut canvas = Canvas::new(height, width, mode);
@@ -34,7 +32,7 @@ fn main() -> io::Result<()> {
     for row in 0.. {
         line.clear();
         let mut x = x_is_row.then_some(row as f64);
-        let n = stdin.read_line(&mut line)?;
+        let n = stdin.read_line(&mut line).context("read input line")?;
         if n == 0 {
             break;
         }
@@ -43,7 +41,7 @@ fn main() -> io::Result<()> {
         let mut line = line.trim_end();
         while !line.is_empty() {
             let (next_num, remainder) = line
-                .split_once(|c| !matches!(c, '0'..='9' | '-' | '+' | '.'))
+                .split_once(|c| !matches!(c, '0'..='9' | '-' | '+' | '.' | 'E' | 'e'))
                 .unwrap_or((line, ""));
             line = remainder;
             let v = match next_num.parse::<f64>() {
@@ -135,7 +133,8 @@ fn main() -> io::Result<()> {
             }
 
             for (i, bin) in histogram.iter_linear(1).enumerate() {
-                let x = bin.value_iterated_to() as f64;
+                let x_as_column = bin.value_iterated_to() as f64;
+                let x = min_y + (x_as_column / plot_width) * range_y;
                 if i >= data.xs.len() {
                     data.xs.push(x);
                 } else {
@@ -156,24 +155,38 @@ fn main() -> io::Result<()> {
     data.draw_into(&mut canvas, &frame);
 
     let stdout = std::io::stdout();
-    let mut stdout = stdout.lock();
+    let stdout = stdout.lock();
+    render(&data, &frame, &canvas, log_x, log_y, stdout).context("render output")?;
+
+    Ok(())
+}
+
+fn render(
+    data: &Data,
+    frame: &Frame,
+    canvas: &Canvas,
+    log_x: bool,
+    log_y: bool,
+    mut out: impl Write,
+) -> eyre::Result<()> {
     let (min_x, max_x) = frame.x_bounds();
     let (min_y, max_y) = frame.y_bounds();
     if log_x {
-        write!(stdout, "    log x: [{min_x} - {max_x}]")?;
+        write!(out, "    log x: [{min_x} - {max_x}]")?;
     } else {
-        write!(stdout, "    x: [{min_x} - {max_x}]")?;
+        write!(out, "    x: [{min_x} - {max_x}]")?;
     }
     if log_y {
-        write!(stdout, "    log y: [{min_y} - {max_y}]")?;
+        write!(out, "    log y: [{min_y} - {max_y}]")?;
     } else {
-        write!(stdout, "    y: [{min_y} - {max_y}]")?;
+        write!(out, "    y: [{min_y} - {max_y}]")?;
     }
     if let Mode::Dot = canvas.mode {
-        write!(stdout, " -- ")?;
+        write!(out, " -- ")?;
+        #[allow(clippy::needless_range_loop)]
         for column in 0..data.ys.len() {
             write!(
-                stdout,
+                out,
                 "{}{}: {}",
                 if column > 0 { ", " } else { "" },
                 column,
@@ -181,8 +194,7 @@ fn main() -> io::Result<()> {
             )?;
         }
     }
-    writeln!(stdout)?;
-    writeln!(stdout, "{canvas}")?;
-
+    writeln!(out)?;
+    writeln!(out, "{canvas}")?;
     Ok(())
 }
