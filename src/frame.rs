@@ -114,8 +114,7 @@ impl Frame {
     pub(crate) fn x_to_column(&self, x: f64) -> usize {
         let plot_width = (self.width - PAD) as f64;
         let x_as_fraction_of_axis = (x - self.min_x) / self.range_x;
-        let x_cell = (plot_width * x_as_fraction_of_axis).round() as usize;
-        x_cell
+        (plot_width * x_as_fraction_of_axis).round() as usize
     }
 
     pub(crate) fn y_to_row(&self, y: f64) -> usize {
@@ -123,8 +122,7 @@ impl Frame {
         let y_as_fraction_of_axis = (y - self.min_y) / self.range_y;
         let y_cell_from_top = (plot_height * y_as_fraction_of_axis).round() as usize;
         // flip y; 0 at bottom of plot
-        let y_cell = self.height - y_cell_from_top - 1;
-        y_cell
+        self.height - y_cell_from_top - 1
     }
 
     pub(crate) fn point_to_cell(&self, (x, y): (f64, f64)) -> (usize, usize) {
@@ -159,6 +157,7 @@ impl Frame {
         // draw in the axes
         // draw the vertical (Y) axis (so where X = 0)
         for row in 0..self.height {
+            #[allow(clippy::collapsible_else_if)]
             let c = if x0_is_visible {
                 if row % 5 == 0 {
                     b'+'
@@ -179,6 +178,7 @@ impl Frame {
         }
         // draw the horizontal (X) axis (so where Y = 0)
         for column in 0..self.width {
+            #[allow(clippy::collapsible_else_if)]
             let c = if y0_is_visible {
                 if column % 5 == 0 {
                     b'+'

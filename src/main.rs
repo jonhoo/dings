@@ -183,6 +183,7 @@ fn render(
     }
     if let Mode::Dot = canvas.mode {
         write!(out, " -- ")?;
+        #[allow(clippy::needless_range_loop)]
         for column in 0..data.ys.len() {
             write!(
                 out,
