@@ -14,11 +14,8 @@ livestream](https://youtu.be/bbWcGAOsbIE).
 
 ## TODOs
 
-**Argument parsing**: Instead of hard-coding the configuration. `clap`
-is probably overkill, plus its MSRV policy may make things sad in terms
-of getting this adopted in long-tail distros. Note in particular that we
-should enforce interactions between arguments (eg, `--cdf` always
-implies `-m count`).
+**Argument help text**: Fill in the text for `--help` (currently
+`unimplemented!`).
 
 **Improved README**: Usage examples, differences from guff, how to
 install.
