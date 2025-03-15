@@ -23,8 +23,6 @@ install.
 **Colored output**: Terminal escape codes to color datasets and axes.
 Ideally using <https://colorbrewer2.org/>.
 
-**CI**: <https://github.com/jonhoo/rust-ci-conf>.
-
 **Remaining features from guff**: `-f` to flip X and Y, `-log c` to get
 logarithmic count ("the trick" won't work any more), `-A` to not draw
 axes, `-S` to disable stream mode, `file` argument to read from file,
