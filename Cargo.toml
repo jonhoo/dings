@@ -11,3 +11,8 @@ categories = ["command-line-utilities", "visualization"]
 eyre = "0.6.12"
 hdrhistogram = { version = "7.5.4", default-features = false }
 lexopt = "0.3.0"
+
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
