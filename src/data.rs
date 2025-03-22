@@ -8,7 +8,38 @@ pub(crate) struct Data {
     pub(crate) ys: Vec<Vec<f64>>,
 }
 
+type MinMaxValsFn = (Option<f64>, Option<f64>, Option<f64>, Option<f64>);
+
 impl Data {
+    pub(crate) fn get_min_max_vals(&self) -> MinMaxValsFn {
+        let min_x = self
+            .xs
+            .iter()
+            .filter(|v| v.is_finite())
+            .copied()
+            .min_by(f64::total_cmp);
+        let max_x = self
+            .xs
+            .iter()
+            .filter(|v| v.is_finite())
+            .copied()
+            .max_by(f64::total_cmp);
+        let min_y = self
+            .ys
+            .iter()
+            .flatten()
+            .filter(|v| v.is_finite())
+            .copied()
+            .min_by(f64::total_cmp);
+        let max_y = self
+            .ys
+            .iter()
+            .flatten()
+            .filter(|v| v.is_finite())
+            .copied()
+            .max_by(f64::total_cmp);
+        (min_x, max_x, min_y, max_y)
+    }
     pub(crate) fn draw_into(&self, canvas: &mut Canvas, using: &Frame) {
         for (row, x) in self.xs.iter().copied().enumerate() {
             let x_cell = using.x_to_column(x);
