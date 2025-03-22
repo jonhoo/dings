@@ -5,6 +5,7 @@ edition = "2021"
 description = "quick command-line data visualization"
 license = "ISC"
 repository = "https://github.com/jonhoo/dings/"
+homepage = "https://github.com/jonhoo/dings/"
 categories = ["command-line-utilities", "visualization"]
 
 [dependencies]
