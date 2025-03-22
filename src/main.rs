@@ -23,6 +23,7 @@ fn main() -> eyre::Result<()> {
         height,
         mode,
         cdf,
+        flip,
     } = Opt::parse_from_env().context("parse command-line arguments")?;
 
     let mut data = Data::default();
