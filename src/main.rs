@@ -24,7 +24,9 @@ fn main() -> eyre::Result<()> {
     } = Opt::parse_from_env().context("parse command-line arguments")?;
 
     let mut data = create_data(&x_is_row)?;
-
+    if flip {
+        data = flip_data(data);
+    }
     if log_x {
         for x in &mut data.xs {
             if *x != 0. {
@@ -89,6 +91,10 @@ fn main() -> eyre::Result<()> {
     render(&data, &frame, &canvas, log_x, log_y, stdout).context("render output")?;
 
     Ok(())
+}
+
+fn flip_data(data: Data) -> Data {
+    todo!()
 }
 
 fn render(

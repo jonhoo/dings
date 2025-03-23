@@ -12,10 +12,8 @@ type MinMaxValsFn = (Option<f64>, Option<f64>, Option<f64>, Option<f64>);
 
 impl Data {
     pub(crate) fn get_min_max_vals(&self) -> MinMaxValsFn {
-        let min_x = get_extreme_from_vec(&self.xs, f64::total_cmp);
-        let max_x = get_extreme_from_vec(&self.xs, |a, b| f64::total_cmp(b, a));
-        let min_y = get_extreme_from_vec_vec(&self.ys, f64::total_cmp);
-        let max_y = get_extreme_from_vec_vec(&self.ys, |a, b| f64::total_cmp(b, a));
+        let (min_x, max_x) = get_min_max_vec(&self.xs);
+        let (min_y, max_y) = get_min_max_vec_vec(&self.ys);
         (min_x, max_x, min_y, max_y)
     }
     pub(crate) fn draw_into(&self, canvas: &mut Canvas, using: &Frame) {
@@ -79,25 +77,18 @@ impl Data {
     }
 }
 
-fn get_extreme_from_vec<F>(vecf64: &Vec<f64>, comparator: F) -> Option<f64>
-where
-    F: Fn(&f64, &f64) -> std::cmp::Ordering,
-{
-    vecf64
-        .iter()
-        .filter(|v| v.is_finite())
-        .copied()
-        .min_by(comparator)
+fn get_min_max_vec(vecf64: &Vec<f64>) -> (Option<f64>, Option<f64>) {
+    let elems = vecf64.iter().filter(|v| v.is_finite());
+    (
+        elems.clone().copied().min_by(f64::total_cmp),
+        elems.copied().max_by(f64::total_cmp),
+    )
 }
 
-fn get_extreme_from_vec_vec<F>(vecvecf64: &Vec<Vec<f64>>, comparator: F) -> Option<f64>
-where
-    F: Fn(&f64, &f64) -> std::cmp::Ordering,
-{
-    vecvecf64
-        .iter()
-        .flatten()
-        .filter(|v| v.is_finite())
-        .copied()
-        .min_by(comparator)
+fn get_min_max_vec_vec(vecvecf64: &Vec<Vec<f64>>) -> (Option<f64>, Option<f64>) {
+    let elems = vecvecf64.iter().flatten().filter(|v| v.is_finite());
+    (
+        elems.clone().copied().min_by(f64::total_cmp),
+        elems.copied().max_by(f64::total_cmp),
+    )
 }
