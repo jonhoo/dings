@@ -24,23 +24,16 @@ fn main() -> eyre::Result<()> {
     } = Opt::parse_from_env().context("parse command-line arguments")?;
 
     let mut data = create_data(&x_is_row)?;
+
     if flip {
-        todo!()
+        data.xs_f = data.ys.clone();
+        data.ys_f = data.xs.clone();
+        eprint!("{:?}", data.xs_f);
+        eprint!("{:?}", data.ys_f);
     }
-    if log_x {
-        for x in &mut data.xs {
-            if *x != 0. {
-                *x = x.log10();
-            }
-        }
-    }
-    if log_y {
-        for y in data.ys.iter_mut().flatten() {
-            if *y != 0. {
-                *y = y.log10();
-            }
-        }
-    }
+
+    //apply log if needed
+    let data = apply_log(log_x, log_y, flip, &mut data);
 
     let mut frame = Frame::new_over(width, height, &data);
 
@@ -202,4 +195,35 @@ fn create_data(x_is_row: &bool) -> eyre::Result<Data> {
         }
     }
     Ok(data)
+}
+
+fn apply_log(log_x: bool, log_y: bool, flip: bool, data: &mut Data) -> &mut Data {
+    if log_x && !flip {
+        for x in &mut data.xs {
+            if *x != 0. {
+                *x = x.log10();
+            }
+        }
+    } else if log_x && flip {
+        for x in &mut data.ys_f {
+            if *x != 0. {
+                *x = x.log10();
+            }
+        }
+    }
+
+    if log_y && !flip {
+        for y in data.ys.iter_mut().flatten() {
+            if *y != 0. {
+                *y = y.log10();
+            }
+        }
+    } else if log_y && flip {
+        for y in data.xs_f.iter_mut().flatten() {
+            if *y != 0. {
+                *y = y.log10();
+            }
+        }
+    }
+    data
 }

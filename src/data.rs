@@ -6,6 +6,8 @@ pub const MARKS: &[u8] = b"@*^!~%ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 pub(crate) struct Data {
     pub(crate) xs: Vec<f64>,
     pub(crate) ys: Vec<Vec<f64>>,
+    pub(crate) xs_f: Vec<Vec<f64>>,
+    pub(crate) ys_f: Vec<f64>,
 }
 
 type MinMaxValsFn = (Option<f64>, Option<f64>, Option<f64>, Option<f64>);
