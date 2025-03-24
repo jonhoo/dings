@@ -4,6 +4,7 @@ pub const MARKS: &[u8] = b"@*^!~%ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 #[derive(Debug, Default)]
 pub(crate) struct Data {
+    pub(crate) flipped: bool,
     pub(crate) xs: Vec<f64>,
     pub(crate) ys: Vec<Vec<f64>>,
     pub(crate) xs_f: Vec<Vec<f64>>,
@@ -13,10 +14,20 @@ pub(crate) struct Data {
 type MinMaxValsFn = (Option<f64>, Option<f64>, Option<f64>, Option<f64>);
 
 impl Data {
+    pub(crate) fn flip(&mut self) {
+        self.flipped = !self.flipped;
+    }
     pub(crate) fn get_min_max_vals(&self) -> MinMaxValsFn {
-        let (min_x, max_x) = get_min_max_vec(&self.xs);
-        let (min_y, max_y) = get_min_max_vec_vec(&self.ys);
-        (min_x, max_x, min_y, max_y)
+        eprintln!("{}", self.flipped);
+        if !self.flipped {
+            let (min_x, max_x) = get_min_max_vec(&self.xs);
+            let (min_y, max_y) = get_min_max_vec_vec(&self.ys);
+            (min_x, max_x, min_y, max_y)
+        } else {
+            let (min_x, max_x) = get_min_max_vec_vec(&self.xs_f);
+            let (min_y, max_y) = get_min_max_vec(&self.ys_f);
+            (min_x, max_x, min_y, max_y)
+        }
     }
     pub(crate) fn draw_into(&self, canvas: &mut Canvas, using: &Frame) {
         for (row, x) in self.xs.iter().copied().enumerate() {

@@ -28,12 +28,15 @@ fn main() -> eyre::Result<()> {
     if flip {
         data.xs_f = data.ys.clone();
         data.ys_f = data.xs.clone();
-        eprint!("{:?}", data.xs_f);
-        eprint!("{:?}", data.ys_f);
+        data.flip();
     }
+    eprint!("xs: {:?}", data.xs);
+    eprint!("ys: {:?}", data.ys);
+    eprint!("xs_f: {:?}", data.xs_f);
+    eprint!("ys_f: {:?}", data.ys_f);
 
     //apply log if needed
-    let data = apply_log(log_x, log_y, flip, &mut data);
+    apply_log(log_x, log_y, flip, &mut data);
 
     let mut frame = Frame::new_over(width, height, &data);
 
