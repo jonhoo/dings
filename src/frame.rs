@@ -1,5 +1,3 @@
-use std::process;
-
 use crate::{Canvas, Data};
 
 pub const PAD: usize = 2;
@@ -20,7 +18,6 @@ pub(crate) struct Frame {
 impl Frame {
     pub(crate) fn new_over(width: usize, height: usize, data: &Data) -> Self {
         let (min_x, max_x, min_y, max_y) = data.get_min_max_vals();
-        eprint!("{:?}, {:?},{:?},{:?}", min_x, max_x, min_y, max_y);
         let (Some(mut min_x), Some(max_x)) = (min_x, max_x) else {
             todo!();
         };

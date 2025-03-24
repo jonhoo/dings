@@ -30,10 +30,6 @@ fn main() -> eyre::Result<()> {
         data.ys_f = data.xs.clone();
         data.flip();
     }
-    eprint!("xs: {:?}", data.xs);
-    eprint!("ys: {:?}", data.ys);
-    eprint!("xs_f: {:?}", data.xs_f);
-    eprint!("ys_f: {:?}", data.ys_f);
 
     //apply log if needed
     apply_log(log_x, log_y, flip, &mut data);
