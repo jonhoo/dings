@@ -194,7 +194,7 @@ fn create_data(x_is_row: &bool) -> eyre::Result<Data> {
     Ok(data)
 }
 
-fn apply_log(log_x: bool, log_y: bool, data: &mut Data) -> &mut Data {
+fn apply_log(log_x: bool, log_y: bool, data: &mut Data) {
     if log_x {
         for x in &mut data.xs {
             if *x != 0. {
@@ -209,5 +209,4 @@ fn apply_log(log_x: bool, log_y: bool, data: &mut Data) -> &mut Data {
             }
         }
     }
-    data
 }
