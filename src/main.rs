@@ -25,7 +25,7 @@ fn main() -> eyre::Result<()> {
 
     let mut data = create_data(&x_is_row)?;
     if flip {
-        data = flip_data(data);
+        todo!()
     }
     if log_x {
         for x in &mut data.xs {
@@ -43,11 +43,11 @@ fn main() -> eyre::Result<()> {
     }
 
     let mut frame = Frame::new_over(width, height, &data);
-    let (min_y, _) = frame.y_bounds();
-    let (_, range_y) = frame.range_xy();
 
     // apply transformations
     if cdf {
+        let (min_y, _) = frame.y_bounds();
+        let (_, range_y) = frame.range_xy();
         data.xs.clear();
 
         let plot_width = (width - PAD) as f64;
@@ -91,10 +91,6 @@ fn main() -> eyre::Result<()> {
     render(&data, &frame, &canvas, log_x, log_y, stdout).context("render output")?;
 
     Ok(())
-}
-
-fn flip_data(data: Data) -> Data {
-    todo!()
 }
 
 fn render(
