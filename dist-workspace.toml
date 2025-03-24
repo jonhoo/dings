@@ -21,5 +21,3 @@ install-updater = false
 github-attestations = true
 # Publish jobs to run in CI
 publish-jobs = ["homebrew"]
-# TODO: this is just to test out all builds on this PR, remove it before merge
-pr-run-mode = "upload"
