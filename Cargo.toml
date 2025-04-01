@@ -1,13 +1,19 @@
 [package]
 name = "dings"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "quick command-line data visualization"
 license = "ISC"
 repository = "https://github.com/jonhoo/dings/"
+homepage = "https://github.com/jonhoo/dings/"
 categories = ["command-line-utilities", "visualization"]
 
 [dependencies]
 eyre = "0.6.12"
 hdrhistogram = { version = "7.5.4", default-features = false }
 lexopt = "0.3.0"
+
+# The profile that 'cargo dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"
