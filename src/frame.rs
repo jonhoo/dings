@@ -17,33 +17,7 @@ pub(crate) struct Frame {
 
 impl Frame {
     pub(crate) fn new_over(width: usize, height: usize, data: &Data) -> Self {
-        let min_x = data
-            .xs
-            .iter()
-            .filter(|v| v.is_finite())
-            .copied()
-            .min_by(f64::total_cmp);
-        let max_x = data
-            .xs
-            .iter()
-            .filter(|v| v.is_finite())
-            .copied()
-            .max_by(f64::total_cmp);
-        let min_y = data
-            .ys
-            .iter()
-            .flatten()
-            .filter(|v| v.is_finite())
-            .copied()
-            .min_by(f64::total_cmp);
-        let max_y = data
-            .ys
-            .iter()
-            .flatten()
-            .filter(|v| v.is_finite())
-            .copied()
-            .max_by(f64::total_cmp);
-
+        let (min_x, max_x, min_y, max_y) = data.get_min_max_vals();
         let (Some(mut min_x), Some(max_x)) = (min_x, max_x) else {
             todo!();
         };

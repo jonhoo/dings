@@ -11,6 +11,7 @@ pub(crate) struct Opt {
     pub(crate) height: usize,
     pub(crate) mode: Mode,
     pub(crate) cdf: bool,
+    pub(crate) flip: bool,
 }
 
 impl Opt {
@@ -23,6 +24,7 @@ impl Opt {
             height: 40,
             mode: Mode::Dot,
             cdf: false,
+            flip: false,
         };
         let mut parser = lexopt::Parser::from_env();
         while let Some(arg) = parser.next().context("read next argument")? {
@@ -68,6 +70,9 @@ impl Opt {
                 }
                 Short('x') => {
                     opt.x_is_row = false;
+                }
+                Short('f') | Long("flip") => {
+                    opt.flip = true;
                 }
                 Long("cdf") => {
                     opt.cdf = true;

@@ -4,32 +4,65 @@ pub const MARKS: &[u8] = b"@*^!~%ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 #[derive(Debug, Default)]
 pub(crate) struct Data {
+    pub(crate) flipped: bool,
     pub(crate) xs: Vec<f64>,
     pub(crate) ys: Vec<Vec<f64>>,
 }
 
+type MinMaxValsFn = (Option<f64>, Option<f64>, Option<f64>, Option<f64>);
+
 impl Data {
+    pub(crate) fn flip(&mut self) {
+        self.flipped = !self.flipped;
+    }
+    pub(crate) fn get_min_max_vals(&self) -> MinMaxValsFn {
+        if self.flipped {
+            let (min_x, max_x) = get_min_max_vec_vec(&self.ys);
+            let (min_y, max_y) = get_min_max_vec(&self.xs);
+            (min_x, max_x, min_y, max_y)
+        } else {
+            let (min_x, max_x) = get_min_max_vec(&self.xs);
+            let (min_y, max_y) = get_min_max_vec_vec(&self.ys);
+            (min_x, max_x, min_y, max_y)
+        }
+    }
     pub(crate) fn draw_into(&self, canvas: &mut Canvas, using: &Frame) {
         for (row, x) in self.xs.iter().copied().enumerate() {
-            let x_cell = using.x_to_column(x);
-
+            let x_cell: usize;
+            if !self.flipped {
+                x_cell = using.x_to_column(x);
+            } else {
+                x_cell = using.y_to_row(x);
+            }
             for (column, ys) in self.ys.iter().enumerate() {
                 let y = ys[row];
 
                 if !y.is_finite() {
                     continue;
                 }
-
                 const CMP_PAD: f64 = 0.001;
-                let (min_x, max_x) = using.x_bounds();
-                assert!(x >= min_x - CMP_PAD);
-                assert!(x <= max_x + CMP_PAD);
-
-                let y_cell = using.y_to_row(y);
-
+                let y_cell: usize;
+                let cell: &mut u8;
                 let mode = canvas.mode;
-                let Some(cell) = canvas.cell(y_cell, x_cell) else {
-                    panic!("invalid cell ({y_cell}, {x_cell}) for data point ({x}, {y})");
+                if !self.flipped {
+                    let (min_x, max_x) = using.x_bounds();
+                    assert!(x >= min_x - CMP_PAD);
+                    assert!(x <= max_x + CMP_PAD);
+
+                    y_cell = using.y_to_row(y);
+                    cell = canvas
+                        .cell(y_cell, x_cell)
+                        .expect("invalid cell ({y_cell}, {x_cell}) for data point ({x}, {y})");
+                } else {
+                    let (min_y, max_y) = using.x_bounds();
+                    assert!(y >= min_y - CMP_PAD);
+                    assert!(y <= max_y + CMP_PAD);
+
+                    y_cell = using.x_to_column(y);
+
+                    cell = canvas
+                        .cell(x_cell, y_cell)
+                        .expect("invalid cell ({y_cell}, {x_cell}) for data point ({x}, {y})");
                 };
 
                 match mode {
@@ -68,4 +101,20 @@ impl Data {
             }
         }
     }
+}
+
+fn get_min_max_vec(vecf64: &Vec<f64>) -> (Option<f64>, Option<f64>) {
+    let elems = vecf64.iter().filter(|v| v.is_finite());
+    (
+        elems.clone().copied().min_by(f64::total_cmp),
+        elems.copied().max_by(f64::total_cmp),
+    )
+}
+
+fn get_min_max_vec_vec(vecvecf64: &Vec<Vec<f64>>) -> (Option<f64>, Option<f64>) {
+    let elems = vecvecf64.iter().flatten().filter(|v| v.is_finite());
+    (
+        elems.clone().copied().min_by(f64::total_cmp),
+        elems.copied().max_by(f64::total_cmp),
+    )
 }
