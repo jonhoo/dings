@@ -23,6 +23,7 @@ fn main() -> eyre::Result<()> {
         height,
         mode,
         cdf,
+        draw_axes,
     } = Opt::parse_from_env().context("parse command-line arguments")?;
 
     let mut data = Data::default();
@@ -151,7 +152,10 @@ fn main() -> eyre::Result<()> {
         frame = Frame::new_over(width, height, &data);
     }
 
-    frame.draw_into(&mut canvas);
+    //if -A option, we don't draw axes.
+    if draw_axes {
+        frame.draw_into(&mut canvas);
+    }
     data.draw_into(&mut canvas, &frame);
 
     let stdout = std::io::stdout();
