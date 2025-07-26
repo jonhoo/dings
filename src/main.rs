@@ -152,7 +152,7 @@ fn main() -> eyre::Result<()> {
         frame = Frame::new_over(width, height, &data);
     }
 
-    //if -A option, we don't draw axes.
+    // if -A is passed, we don't draw axes.
     if draw_axes {
         frame.draw_into(&mut canvas);
     }
