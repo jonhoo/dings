@@ -20,6 +20,7 @@ fn main() -> eyre::Result<()> {
         height,
         mode,
         cdf,
+        draw_axes,
         flip,
     } = Opt::parse_from_env().context("parse command-line arguments")?;
 
@@ -72,8 +73,15 @@ fn main() -> eyre::Result<()> {
         frame = Frame::new_over(width, height, &data);
     }
 
+
     let mut canvas = Canvas::new(height, width, mode);
     frame.draw_into(&mut canvas);
+
+    // if -A is passed, we don't draw axes.
+    if draw_axes {
+        frame.draw_into(&mut canvas);
+    }
+
     data.draw_into(&mut canvas, &frame);
 
     let stdout = std::io::stdout();

@@ -11,6 +11,7 @@ pub(crate) struct Opt {
     pub(crate) height: usize,
     pub(crate) mode: Mode,
     pub(crate) cdf: bool,
+    pub(crate) draw_axes: bool,
     pub(crate) flip: bool,
 }
 
@@ -24,6 +25,7 @@ impl Opt {
             height: 40,
             mode: Mode::Dot,
             cdf: false,
+            draw_axes: true,
             flip: false,
         };
         let mut parser = lexopt::Parser::from_env();
@@ -76,6 +78,9 @@ impl Opt {
                 }
                 Long("cdf") => {
                     opt.cdf = true;
+                }
+                Short('A') => {
+                    opt.draw_axes = false;
                 }
                 arg => return Err(arg.unexpected().into()),
             }

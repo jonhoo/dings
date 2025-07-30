@@ -24,9 +24,9 @@ install.
 Ideally using <https://colorbrewer2.org/>.
 
 **Remaining features from guff**: `-f` to flip X and Y, `-log c` to get
-logarithmic count ("the trick" won't work any more), `-A` to not draw
-axes, `-S` to disable stream mode, `file` argument to read from file,
-and support for blank lines to reset. Notably, probably not SVG.
+logarithmic count ("the trick" won't work any more), `-S` to disable
+stream mode, `file` argument to read from file, and support for blank
+lines to reset. Notably, probably not SVG.
 
 **Tests**: The original had extensive tests that we should bring over.
 Fuzzing, probably with `quickcheck`, but maybe AFL for input fuzzing as
