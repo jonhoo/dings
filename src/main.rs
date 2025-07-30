@@ -12,9 +12,6 @@ mod data;
 mod frame;
 
 fn main() -> eyre::Result<()> {
-    let stdin = std::io::stdin();
-    let mut stdin = stdin.lock();
-
     let Opt {
         log_x,
         log_y,
@@ -24,11 +21,116 @@ fn main() -> eyre::Result<()> {
         mode,
         cdf,
         draw_axes,
+        flip,
     } = Opt::parse_from_env().context("parse command-line arguments")?;
 
-    let mut data = Data::default();
+    let mut data = create_data(&x_is_row)?;
+
+    if flip {
+        data.flip();
+    }
+
+    //apply log if needed
+    apply_log(log_x, log_y, &mut data);
+
+    let mut frame = Frame::new_over(width, height, &data);
+
+    // apply transformations
+    if cdf {
+        let (min_y, _) = frame.y_bounds();
+        let (_, range_y) = frame.range_xy();
+        data.xs.clear();
+
+        let plot_width = (width - PAD) as f64;
+        for ys in &mut data.ys {
+            let mut histogram =
+                Histogram::<u32>::new_with_bounds(1, width as u64, 3).expect("3 is a valid sigfig");
+            for y in ys.drain(..) {
+                let y_as_fraction_of_axis = (y - min_y) / range_y;
+                let y_as_future_column = (plot_width * y_as_fraction_of_axis).round() as u64;
+
+                histogram
+                    .record(y_as_future_column)
+                    .expect("value is in range");
+            }
+
+            for (i, bin) in histogram.iter_linear(1).enumerate() {
+                let x_as_column = bin.value_iterated_to() as f64;
+                let x = min_y + (x_as_column / plot_width) * range_y;
+                if i >= data.xs.len() {
+                    data.xs.push(x);
+                } else {
+                    assert_eq!(x, data.xs[i]);
+                }
+                ys.push(bin.percentile());
+            }
+        }
+
+        for y in &mut data.ys {
+            y.resize(data.xs.len(), y.last().copied().unwrap_or(f64::NAN));
+        }
+
+        frame = Frame::new_over(width, height, &data);
+    }
+
     let mut canvas = Canvas::new(height, width, mode);
 
+    // if -A is passed, we don't draw axes.
+    if draw_axes {
+        frame.draw_into(&mut canvas);
+    }
+
+    data.draw_into(&mut canvas, &frame);
+
+    let stdout = std::io::stdout();
+    let stdout = stdout.lock();
+    render(&data, &frame, &canvas, log_x, log_y, stdout).context("render output")?;
+
+    Ok(())
+}
+
+fn render(
+    data: &Data,
+    frame: &Frame,
+    canvas: &Canvas,
+    log_x: bool,
+    log_y: bool,
+    mut out: impl Write,
+) -> eyre::Result<()> {
+    let (min_x, max_x) = frame.x_bounds();
+    let (min_y, max_y) = frame.y_bounds();
+    if log_x {
+        write!(out, "    log x: [{min_x} - {max_x}]")?;
+    } else {
+        write!(out, "    x: [{min_x} - {max_x}]")?;
+    }
+    if log_y {
+        write!(out, "    log y: [{min_y} - {max_y}]")?;
+    } else {
+        write!(out, "    y: [{min_y} - {max_y}]")?;
+    }
+    if let Mode::Dot = canvas.mode {
+        write!(out, " -- ")?;
+        #[allow(clippy::needless_range_loop)]
+        for column in 0..data.ys.len() {
+            write!(
+                out,
+                "{}{}: {}",
+                if column > 0 { ", " } else { "" },
+                column,
+                char::from(MARKS[column])
+            )?;
+        }
+    }
+    writeln!(out)?;
+    writeln!(out, "{canvas}")?;
+    Ok(())
+}
+
+fn create_data(x_is_row: &bool) -> eyre::Result<Data> {
+    let stdin = std::io::stdin();
+    let mut stdin = stdin.lock();
+    let mut data = Data::default();
     let mut line = String::new();
     for row in 0.. {
         line.clear();
@@ -79,7 +181,6 @@ fn main() -> eyre::Result<()> {
                 x = Some(v);
             }
         }
-
         // whatever x value we discovered is the x for the row
         // NOTE: if this is None, that means there were no column values at all, which is
         // equivalent to an empty line, which we simply don't count as a sample. note also that
@@ -96,7 +197,10 @@ fn main() -> eyre::Result<()> {
             }
         }
     }
+    Ok(data)
+}
 
+fn apply_log(log_x: bool, log_y: bool, data: &mut Data) {
     if log_x {
         for x in &mut data.xs {
             if *x != 0. {
@@ -111,94 +215,4 @@ fn main() -> eyre::Result<()> {
             }
         }
     }
-
-    let mut frame = Frame::new_over(width, height, &data);
-    let (min_y, _) = frame.y_bounds();
-    let (_, range_y) = frame.range_xy();
-
-    // apply transformations
-    if cdf {
-        data.xs.clear();
-
-        let plot_width = (width - PAD) as f64;
-        for ys in &mut data.ys {
-            let mut histogram =
-                Histogram::<u32>::new_with_bounds(1, width as u64, 3).expect("3 is a valid sigfig");
-            for y in ys.drain(..) {
-                let y_as_fraction_of_axis = (y - min_y) / range_y;
-                let y_as_future_column = (plot_width * y_as_fraction_of_axis).round() as u64;
-
-                histogram
-                    .record(y_as_future_column)
-                    .expect("value is in range");
-            }
-
-            for (i, bin) in histogram.iter_linear(1).enumerate() {
-                let x_as_column = bin.value_iterated_to() as f64;
-                let x = min_y + (x_as_column / plot_width) * range_y;
-                if i >= data.xs.len() {
-                    data.xs.push(x);
-                } else {
-                    assert_eq!(x, data.xs[i]);
-                }
-                ys.push(bin.percentile());
-            }
-        }
-
-        for y in &mut data.ys {
-            y.resize(data.xs.len(), y.last().copied().unwrap_or(f64::NAN));
-        }
-
-        frame = Frame::new_over(width, height, &data);
-    }
-
-    // if -A is passed, we don't draw axes.
-    if draw_axes {
-        frame.draw_into(&mut canvas);
-    }
-    data.draw_into(&mut canvas, &frame);
-
-    let stdout = std::io::stdout();
-    let stdout = stdout.lock();
-    render(&data, &frame, &canvas, log_x, log_y, stdout).context("render output")?;
-
-    Ok(())
-}
-
-fn render(
-    data: &Data,
-    frame: &Frame,
-    canvas: &Canvas,
-    log_x: bool,
-    log_y: bool,
-    mut out: impl Write,
-) -> eyre::Result<()> {
-    let (min_x, max_x) = frame.x_bounds();
-    let (min_y, max_y) = frame.y_bounds();
-    if log_x {
-        write!(out, "    log x: [{min_x} - {max_x}]")?;
-    } else {
-        write!(out, "    x: [{min_x} - {max_x}]")?;
-    }
-    if log_y {
-        write!(out, "    log y: [{min_y} - {max_y}]")?;
-    } else {
-        write!(out, "    y: [{min_y} - {max_y}]")?;
-    }
-    if let Mode::Dot = canvas.mode {
-        write!(out, " -- ")?;
-        #[allow(clippy::needless_range_loop)]
-        for column in 0..data.ys.len() {
-            write!(
-                out,
-                "{}{}: {}",
-                if column > 0 { ", " } else { "" },
-                column,
-                char::from(MARKS[column])
-            )?;
-        }
-    }
-    writeln!(out)?;
-    writeln!(out, "{canvas}")?;
-    Ok(())
 }
