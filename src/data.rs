@@ -13,6 +13,11 @@ impl Data {
         for (row, x) in self.xs.iter().copied().enumerate() {
             let x_cell = using.x_to_column(x);
 
+            //in the flip case, we can have x Nan values
+            if !x.is_finite() {
+                continue;
+            }
+
             for (column, ys) in self.ys.iter().enumerate() {
                 let y = ys[row];
 

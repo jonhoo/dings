@@ -24,6 +24,7 @@ fn main() -> eyre::Result<()> {
         mode,
         cdf,
         draw_axes,
+        flip,
     } = Opt::parse_from_env().context("parse command-line arguments")?;
 
     let mut data = Data::default();
@@ -95,6 +96,43 @@ fn main() -> eyre::Result<()> {
                 y.push(f64::NAN);
             }
         }
+    }
+
+    //if -f flip, we flip xs and ys before any plotting.
+    //EXAMPLE:
+    //if we want to plot 1 2 3\n4 5 6\n, in normal mode, we would have:
+    //data.xs=[0,1]
+    //data.ys=[[1,4],[2,5],[3,6]].
+    //This would produce the following series:
+    //  @     *      ^
+    //(0,1) (0,2) (0,3)
+    //(1,4) (1,5) (1,6)
+    //In order to preserve all the plotting mechanism, we want to obtain those new vecs:
+    //data.xs=[1,4,2,5,3,6]
+    //data.ys=[[0,1,N,N,N,N],[N,N,0,1,N,N],[N,N,N,N,0,1]] (N=NAN)
+    //It would produce
+    //  @     *      ^
+    //(1,0) (2,0) (3,0)
+    //(4,1) (5,1) (6,1)
+    //
+    if flip {
+        let num_cols = data.ys.len();
+        //for xs, we just have to flatten ys into a Vec
+        let new_xs: Vec<f64> = data.ys.iter().flatten().copied().collect();
+
+        //for ys, we have to adjust the len of each Vec to match new xs. We use Nan values as they
+        //will be discard by the data.draw_into fn.
+        if new_xs.len() > data.xs.len() {
+            data.xs
+                .extend(std::iter::repeat_n(f64::NAN, new_xs.len() - data.xs.len()));
+        }
+        //we repeat this vec the necessary number of times and we rotate values to the right.
+        let mut new_ys: Vec<Vec<f64>> = std::iter::repeat_n(data.xs, num_cols).collect();
+        for (index, elem) in new_ys.iter_mut().enumerate() {
+            elem.rotate_right(2 * index);
+        }
+
+        (data.xs, data.ys) = (new_xs, new_ys);
     }
 
     if log_x {
