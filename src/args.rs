@@ -1,5 +1,5 @@
 use crate::canvas::Mode;
-use eyre::Context;
+use eyre::{Context, Ok};
 use lexopt::prelude::*;
 
 #[derive(Debug)]
@@ -13,6 +13,8 @@ pub(crate) struct Opt {
     pub(crate) cdf: bool,
     pub(crate) draw_axes: bool,
 }
+
+pub const HELP_MESSAGE: &str = "Help displayed, exiting.";
 
 impl Opt {
     pub fn parse_from_env() -> eyre::Result<Self> {
@@ -31,6 +33,7 @@ impl Opt {
             match arg {
                 Short('h') | Long("help") => {
                     cli_help();
+                    eyre::bail!(HELP_MESSAGE);
                 }
                 Short('d') => {
                     let dim = parser.value().context("value for -d")?;
@@ -98,24 +101,15 @@ impl Opt {
 }
 
 fn cli_help() {
-    let title_color = 0;
-    let color = 32;
-    let commands_color = 32;
+    println!("Dings: a quick command-line data visualization tool.\n");
     println!(
-        "\x1b[{}m Dings: a quick command-line data visualization tool.\x1b[0m",
-        title_color
-    );
-    println!();
-    println!(
-        "\x1b[{};1m Usage:\x1b[0m\x1b[1m dings [-A] [-d WxH] [-f] [-h|--help] [-l|--log XY]
-              [-m|--mode MODE] [--cdf] [-x] [FILE]\x1b[0m",
-        color
+        "\x1b[1mUsage: dings [-A] [-d WxH] [-h|--help] [-l|--log XY]
+              [-m|--mode MODE] [--cdf] [-x] [FILE]\x1b[0m\n"
     );
 
     let commands = [
         ("A", "don't draw axes"),
         ("d", "set width & height (e.g. \"-d 640x480\")"),
-        ("f", "flip x & y axes in plot"),
         ("h|help", "print help message"),
         ("l|log", "any of 'x' or 'y' to log scale"),
         ("m|mode", "'dot'or 'count'. Default 'dot'"),
@@ -126,10 +120,6 @@ fn cli_help() {
         ("x", "treat first column as X for all following Y columns"),
     ];
     for (cmd, desc) in commands {
-        println!(
-            "   \x1b[{}m{:<12}\x1b[0m \x1b[0m{}",
-            commands_color, cmd, desc
-        )
+        println!("   {:<12} {}", cmd, desc);
     }
-    std::process::exit(0);
 }

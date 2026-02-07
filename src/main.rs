@@ -24,7 +24,16 @@ fn main() -> eyre::Result<()> {
         mode,
         cdf,
         draw_axes,
-    } = Opt::parse_from_env().context("parse command-line arguments")?;
+    } = match Opt::parse_from_env() {
+        Ok(opt) => opt,
+        Err(e) => {
+            if e.to_string() == args::HELP_MESSAGE {
+                return Ok(());
+            } else {
+                return Err(e);
+            }
+        }
+    };
 
     let mut data = Data::default();
     let mut canvas = Canvas::new(height, width, mode);
