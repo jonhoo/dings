@@ -15,7 +15,7 @@ fn main() -> eyre::Result<()> {
     let stdin = std::io::stdin();
     let mut stdin = stdin.lock();
 
-    let Opt {
+    let Some(Opt {
         log_x,
         log_y,
         x_is_row,
@@ -24,7 +24,11 @@ fn main() -> eyre::Result<()> {
         mode,
         cdf,
         draw_axes,
-    } = Opt::parse_from_env().context("parse command-line arguments")?;
+    }) = Opt::parse_from_env().context("parse command-line arguments")?
+    else {
+        // help text was displayed
+        return Ok(());
+    };
 
     let mut data = Data::default();
     let mut canvas = Canvas::new(height, width, mode);

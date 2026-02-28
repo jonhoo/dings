@@ -1,5 +1,5 @@
 use crate::canvas::Mode;
-use eyre::Context;
+use eyre::{Context, Ok};
 use lexopt::prelude::*;
 
 #[derive(Debug)]
@@ -15,7 +15,7 @@ pub(crate) struct Opt {
 }
 
 impl Opt {
-    pub fn parse_from_env() -> eyre::Result<Self> {
+    pub fn parse_from_env() -> eyre::Result<Option<Self>> {
         let mut opt = Opt {
             log_x: false,
             log_y: false,
@@ -30,7 +30,8 @@ impl Opt {
         while let Some(arg) = parser.next().context("read next argument")? {
             match arg {
                 Short('h') | Long("help") => {
-                    unimplemented!();
+                    cli_help();
+                    return Ok(None);
                 }
                 Short('d') => {
                     let dim = parser.value().context("value for -d")?;
@@ -93,6 +94,30 @@ impl Opt {
             // NOTE: log y is interpreted as log of the _input_ not _output_
         }
 
-        Ok(opt)
+        Ok(Some(opt))
+    }
+}
+
+fn cli_help() {
+    println!("Dings: a quick command-line data visualization tool.\n");
+    println!(
+        "Usage: dings [-A] [-d WxH] [-h|--help] [-l|--log XY]
+              [-m|--mode MODE] [--cdf] [-x] [FILE]\n"
+    );
+
+    let commands = [
+        ("A", "don't draw axes"),
+        ("d", "set width & height (e.g. \"-d 640x480\")"),
+        ("h|help", "print help message"),
+        ("l|log", "any of 'x' or 'y' to log scale"),
+        ("m|mode", "'dot'or 'count'. Default 'dot'"),
+        (
+            "cdf",
+            "cumulative distribution function, only for the y value. Not compatible with log & x",
+        ),
+        ("x", "treat first column as X for all following Y columns"),
+    ];
+    for (cmd, desc) in commands {
+        println!("   {:<12} {}", cmd, desc);
     }
 }
