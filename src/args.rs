@@ -14,10 +14,8 @@ pub(crate) struct Opt {
     pub(crate) draw_axes: bool,
 }
 
-pub const HELP_MESSAGE: &str = "Help displayed, exiting.";
-
 impl Opt {
-    pub fn parse_from_env() -> eyre::Result<Self> {
+    pub fn parse_from_env() -> eyre::Result<Option<Self>> {
         let mut opt = Opt {
             log_x: false,
             log_y: false,
@@ -33,7 +31,7 @@ impl Opt {
             match arg {
                 Short('h') | Long("help") => {
                     cli_help();
-                    eyre::bail!(HELP_MESSAGE);
+                    return Ok(None);
                 }
                 Short('d') => {
                     let dim = parser.value().context("value for -d")?;
@@ -96,7 +94,7 @@ impl Opt {
             // NOTE: log y is interpreted as log of the _input_ not _output_
         }
 
-        Ok(opt)
+        Ok(Some(opt))
     }
 }
 
