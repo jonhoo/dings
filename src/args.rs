@@ -101,8 +101,8 @@ impl Opt {
 fn cli_help() {
     println!("Dings: a quick command-line data visualization tool.\n");
     println!(
-        "\x1b[1mUsage: dings [-A] [-d WxH] [-h|--help] [-l|--log XY]
-              [-m|--mode MODE] [--cdf] [-x] [FILE]\x1b[0m\n"
+        "Usage: dings [-A] [-d WxH] [-h|--help] [-l|--log XY]
+              [-m|--mode MODE] [--cdf] [-x] [FILE]\n"
     );
 
     let commands = [
