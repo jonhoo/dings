@@ -14,9 +14,6 @@ livestream](https://youtu.be/bbWcGAOsbIE).
 
 ## TODOs
 
-**Argument help text**: Fill in the text for `--help` (currently
-`unimplemented!`). Ideally we would also generate a man page.
-
 **Improved README**: Usage examples, differences from guff, how to
 install.
 
@@ -35,6 +32,4 @@ well.
 **Additional transformations**: Support for
 [PDF](https://en.wikipedia.org/wiki/Probability_density_function).
 
-**Statically linked binary release**: A tool like this it's super handy
-to be able to just fetch and run. Probably best managed with
-<https://github.com/axodotdev/cargo-dist>.
+**Include a man page**
