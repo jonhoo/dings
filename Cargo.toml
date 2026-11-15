@@ -2,6 +2,7 @@
 name = "dings"
 version = "0.1.3"
 edition = "2021"
+rust-version = "1.80.1"
 description = "quick command-line data visualization"
 license = "ISC"
 repository = "https://github.com/jonhoo/dings/"
